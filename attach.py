@@ -2,8 +2,8 @@
 
 import argparse
 import os
-from subprocess import Popen, PIPE
 import re
+import subprocess
 
 
 def get_pid(node_name):
@@ -12,12 +12,13 @@ def get_pid(node_name):
     """
     node_pat = re.compile('.*bash .* mininet:{}'.format(node_name))
 
-    out, _ = Popen("ps aux".split(), stdout=PIPE).communicate()
-    for line in out.split('\n'):
-        match = node_pat.match(line)
+    lines = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE).stdout.readlines()
+    for line in lines:
+        line_string = str(line)
+        match = node_pat.match(line_string)
         if not match:
             continue
-        pid = line.split()[1]
+        pid = line_string.split()[1]
         return pid
 
     raise KeyError("No process found for {}".format(node_name))
